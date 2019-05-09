@@ -43,6 +43,8 @@ class ViewController: UIViewController, WKNavigationDelegate {
         //add UIToolbar items with UIBarButtonItems
         let spacer = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         let reload = UIBarButtonItem(barButtonSystemItem: .refresh, target: webView, action: #selector(webView.reload))
+        let goBack = UIBarButtonItem(barButtonSystemItem: .rewind, target: webView, action: #selector(webView.goBack))
+        let goForward = UIBarButtonItem(barButtonSystemItem: .fastForward, target: webView, action: #selector(webView.goForward))
         
         //add progressView
         progressView = UIProgressView(progressViewStyle: .default)
@@ -50,7 +52,7 @@ class ViewController: UIViewController, WKNavigationDelegate {
         let progressButton = UIBarButtonItem(customView: progressView)
         
         //add items to toolbarItems array
-        toolbarItems = [progressButton, spacer, reload]
+        toolbarItems = [progressButton, goBack, goForward, spacer, reload]
         navigationController?.isToolbarHidden = false
         
         webView.addObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), options: .new, context: nil)
@@ -82,6 +84,8 @@ class ViewController: UIViewController, WKNavigationDelegate {
     }
     
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        let alert = UIAlertController(title: "Blocked!", message: nil, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Ok", style: .cancel))
         let url = navigationAction.request.url
         
         if let host = url?.host {
@@ -91,9 +95,10 @@ class ViewController: UIViewController, WKNavigationDelegate {
                     return
                 }
             }
+        } else {
+            decisionHandler(.cancel)
+            //present(alert, animated: true)
         }
-        
-        decisionHandler(.cancel)
     }
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
